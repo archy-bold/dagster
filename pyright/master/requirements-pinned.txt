@@ -116,7 +116,6 @@ cycler==0.11.0
 -e python_modules/libraries/dagster-duckdb-polars
 -e python_modules/libraries/dagster-duckdb-pyspark
 -e python_modules/dagster-ext
-dagster-externals==1!0+dev
 -e python_modules/libraries/dagster-fivetran
 -e python_modules/libraries/dagster-gcp
 -e python_modules/libraries/dagster-gcp-pandas
