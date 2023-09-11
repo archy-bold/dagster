@@ -1,3 +1,5 @@
+from typing import Optional
+
 from dagster import AssetMaterialization, DagsterInstance
 from dagster._core.definitions.asset_spec import AssetSpec
 from dagster._core.definitions.assets import AssetsDefinition
@@ -21,15 +23,22 @@ def create_unmanaged_asset(asset_spec: AssetSpec) -> AssetsDefinition:
     #     raise Exception("illegal to materialize this asset")
     return _unmanaged_asset
 
+
 # This is used by external computations to report materializations
 # Right now this hits the DagsterInstance directly, but we would
 # change this to hit the Dagster GraphQL API or some sort of ext-esque channel
-def report_asset_materialization(asset_key: str, metadata: dict):
-    instance = DagsterInstance.get()
+def report_asset_materialization(
+    asset_key: str,
+    metadata: dict,
+    instance: Optional[DagsterInstance] = None,
+    run_id: Optional[str] = None,
+    job_name: Optional[str] = None,
+):
+    instance = instance or DagsterInstance.get()
     dagster_event = DagsterEvent.from_external(
         event_type=DagsterEventType.ASSET_MATERIALIZATION,
         event_specific_data=StepMaterializationData(
             AssetMaterialization(asset_key=asset_key, metadata=metadata)
-        )
+        ),
     )
-    instance.report_dagster_event(dagster_event, run_id="dummy")
+    instance.report_dagster_event(dagster_event, run_id=run_id or "runless")
