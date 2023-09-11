@@ -10,16 +10,16 @@ from dagster._core.events import DagsterEvent, DagsterEventType, StepMaterializa
 # button in the UI (it would act more like a source asset). However
 # this allows Dagster to act as a data observability tool and lineage
 # tool for assets defined elsewhere
-def create_externally_computed_asset(asset_spec: AssetSpec) -> AssetsDefinition:
+def create_unmanaged_asset(asset_spec: AssetSpec) -> AssetsDefinition:
     @asset(key=asset_spec.asset_key, deps=[dep.asset_key for dep in asset_spec.deps])
-    def _dummy_asset(_) -> None:
+    def _unmanaged_asset(_) -> None:
         raise Exception("Illegal to materialize this asset")
 
     # this is not working
     # @multi_asset(specs=[asset_spec])
     # def _dummy_asset(_):
     #     raise Exception("illegal to materialize this asset")
-    return _dummy_asset
+    return _unmanaged_asset
 
 # This is used by external computations to report materializations
 # Right now this hits the DagsterInstance directly, but we would
