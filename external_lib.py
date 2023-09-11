@@ -26,7 +26,7 @@ def create_externally_computed_asset(asset_spec: AssetSpec) -> AssetsDefinition:
 # change this to hit the Dagster GraphQL API or some sort of ext-esque channel
 def report_asset_materialization(asset_key: str, metadata: dict):
     instance = DagsterInstance.get()
-    dagster_event = DagsterEvent.from_exteral(
+    dagster_event = DagsterEvent.from_external(
         event_type=DagsterEventType.ASSET_MATERIALIZATION,
         event_specific_data=StepMaterializationData(
             AssetMaterialization(asset_key=asset_key, metadata=metadata)

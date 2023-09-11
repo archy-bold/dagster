@@ -409,7 +409,7 @@ class DagsterEvent(
     """
 
     @staticmethod
-    def from_exteral(
+    def from_external(
         event_type: "DagsterEventType",
         event_specific_data: Optional["EventSpecificData"] = None,
         message: Optional[str] = None,
