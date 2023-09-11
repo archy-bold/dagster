@@ -5,10 +5,15 @@ from dagster._core.definitions.decorators.asset_decorator import asset
 from dagster._core.events import DagsterEvent, DagsterEventType, StepMaterializationData
 
 
-def create_dummy_asset(asset_spec: AssetSpec) -> AssetsDefinition:
+# This creates an AssetsDefinition that contains an asset that is never
+# meant to be materialized by Dagster. Presumably we would disable
+# button in the UI (it would act more like a source asset). However
+# this allows Dagster to act as a data observability tool and lineage
+# tool for assets defined elsewhere
+def create_externally_computed_asset(asset_spec: AssetSpec) -> AssetsDefinition:
     @asset(key=asset_spec.asset_key, deps=[dep.asset_key for dep in asset_spec.deps])
     def _dummy_asset(_) -> None:
-        raise Exception("illegal to materialize this asset")
+        raise Exception("Illegal to materialize this asset")
 
     # this is not working
     # @multi_asset(specs=[asset_spec])
@@ -16,6 +21,9 @@ def create_dummy_asset(asset_spec: AssetSpec) -> AssetsDefinition:
     #     raise Exception("illegal to materialize this asset")
     return _dummy_asset
 
+# This is used by external computations to report materializations
+# Right now this hits the DagsterInstance directly, but we would
+# change this to hit the Dagster GraphQL API or some sort of ext-esque channel
 def report_asset_materialization(asset_key: str, metadata: dict):
     instance = DagsterInstance.get()
     dagster_event = DagsterEvent.from_exteral(
