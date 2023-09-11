@@ -2,6 +2,9 @@ from dagster import DagsterInstance, job, op
 from dagster._core.definitions.events import AssetMaterialization
 from dagster._core.execution.context.compute import OpExecutionContext
 
+# This is an example of how a user who has a lot of existing ops that did
+# not want to migrate could still plug into the asset graph
+
 
 @op
 def op_produces_asset_one(context: OpExecutionContext):

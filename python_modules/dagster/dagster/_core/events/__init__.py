@@ -413,6 +413,7 @@ class DagsterEvent(
         event_type: "DagsterEventType",
         event_specific_data: Optional["EventSpecificData"] = None,
         message: Optional[str] = None,
+        job_name: Optional[str] = None,
     ):
         event = DagsterEvent(
             event_type_value=check.inst_param(event_type, "event_type", DagsterEventType).value,
@@ -421,7 +422,7 @@ class DagsterEvent(
             # node_handle=step_context.step.node_handle,
             # step_kind_value=step_context.step.kind.value,
             # logging_tags=step_context.event_tags,
-            job_name="TODO",
+            job_name=job_name or "TODO",
             step_handle=None,
             node_handle=None,
             step_kind_value=None,

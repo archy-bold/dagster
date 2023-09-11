@@ -40,5 +40,6 @@ def report_asset_materialization(
         event_specific_data=StepMaterializationData(
             AssetMaterialization(asset_key=asset_key, metadata=metadata)
         ),
+        job_name=job_name,
     )
     instance.report_dagster_event(dagster_event, run_id=run_id or "runless")
