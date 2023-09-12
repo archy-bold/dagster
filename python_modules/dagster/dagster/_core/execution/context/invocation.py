@@ -14,6 +14,7 @@ from typing import (
 )
 
 import dagster._check as check
+from dagster._core.definitions.asset_check_result import AssetCheckResult
 from dagster._core.definitions.assets import AssetsDefinition
 from dagster._core.definitions.composition import PendingNodeInvocation
 from dagster._core.definitions.decorators.op_decorator import DecoratedOpFunction
@@ -48,6 +49,7 @@ from dagster._core.errors import (
     DagsterInvariantViolationError,
 )
 from dagster._core.execution.build_resources import build_resources, wrap_resources_for_execution
+from dagster._core.execution.plan.compute import OpOutputUnion
 from dagster._core.instance import DagsterInstance
 from dagster._core.log_manager import DagsterLogManager
 from dagster._core.storage.dagster_run import DagsterRun
@@ -116,6 +118,7 @@ class UnboundOpExecutionContext(OpExecutionContext):
         self._partition_key_range = partition_key_range
         self._user_events: List[UserEvent] = []
         self._output_metadata: Dict[str, Any] = {}
+        self._result_objects: List[OpOutputUnion] = []
 
         self._assets_def = check.opt_inst_param(assets_def, "assets_def", AssetsDefinition)
 
@@ -324,6 +327,7 @@ class UnboundOpExecutionContext(OpExecutionContext):
             ),
             user_events=self._user_events,
             output_metadata=self._output_metadata,
+            result_objects=self._result_objects,
             mapping_key=self._mapping_key,
             partition_key=self._partition_key,
             partition_key_range=self._partition_key_range,
@@ -406,6 +410,7 @@ class BoundOpExecutionContext(OpExecutionContext):
     _user_events: List[UserEvent]
     _seen_outputs: Dict[str, Union[str, Set[str]]]
     _output_metadata: Dict[str, Any]
+    _result_objects: List[OpOutputUnion]
     _mapping_key: Optional[str]
     _partition_key: Optional[str]
     _partition_key_range: Optional[PartitionKeyRange]
@@ -425,6 +430,7 @@ class BoundOpExecutionContext(OpExecutionContext):
         alias: Optional[str],
         user_events: List[UserEvent],
         output_metadata: Dict[str, Any],
+        result_objects: List[OpOutputUnion],
         mapping_key: Optional[str],
         partition_key: Optional[str],
         partition_key_range: Optional[PartitionKeyRange],
@@ -443,6 +449,7 @@ class BoundOpExecutionContext(OpExecutionContext):
         self._user_events = user_events
         self._seen_outputs = {}
         self._output_metadata = output_metadata
+        self._result_objects = result_objects
         self._mapping_key = mapping_key
         self._partition_key = partition_key
         self._partition_key_range = partition_key_range
@@ -713,6 +720,15 @@ class BoundOpExecutionContext(OpExecutionContext):
 
         else:
             self._output_metadata[output_name] = metadata
+
+    def add_asset_check_result(self, asset_check_result: AssetCheckResult) -> None:
+        raise DagsterInvariantViolationError(
+            "Add `add_asset_check_result` is not supported during op invocation"
+        )
+
+    # We can always return false here since `add_asset_check_result` can't be used with invocation.
+    def has_asset_check_result_for_output(self, output_name: str) -> bool:
+        return False
 
 
 def build_op_context(

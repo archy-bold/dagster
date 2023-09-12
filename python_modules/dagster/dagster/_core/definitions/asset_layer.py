@@ -644,6 +644,15 @@ class AssetLayer(NamedTuple):
     def asset_checks_defs(self) -> Iterable[AssetChecksDefinition]:
         return self.asset_checks_defs_by_node_handle.values()
 
+    def get_asset_check_for_output_name(self, output_name: str) -> Optional[AssetCheckHandle]:
+        for (
+            asset_check_handle,
+            node_output_handle,
+        ) in self.node_output_handles_by_asset_check_handle.items():
+            if node_output_handle.output_name == output_name:
+                return asset_check_handle
+        return None
+
     def get_output_name_for_asset_check(self, asset_check_handle: AssetCheckHandle) -> str:
         """Output name in the leaf op."""
         return self.node_output_handles_by_asset_check_handle[asset_check_handle].output_name

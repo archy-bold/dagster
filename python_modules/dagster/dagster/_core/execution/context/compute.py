@@ -16,6 +16,7 @@ from typing_extensions import TypeAlias
 
 import dagster._check as check
 from dagster._annotations import deprecated, experimental, public
+from dagster._core.definitions.asset_check_result import AssetCheckResult
 from dagster._core.definitions.asset_check_spec import AssetCheckSpec
 from dagster._core.definitions.assets import AssetsDefinition
 from dagster._core.definitions.data_version import (
@@ -463,6 +464,51 @@ class OpExecutionContext(AbstractComputeExecutionContext):
         return self._step_execution_context.get_output_metadata(
             output_name=output_name, mapping_key=mapping_key
         )
+
+    @public
+    @experimental
+    def add_asset_check_result(self, asset_check_result: AssetCheckResult) -> None:
+        """Add an asset check result for an asset being materialized in the current step.
+
+        Args:
+            asset_check_result (AssetCheckResult): The asset check result to add.
+
+        **Examples:**
+
+        .. code-block:: python
+
+            from dagster import op, AssetKey, AssetCheckSeverity
+
+            @asset
+            def foo_asset(context):
+                ...
+                context.add_asset_check_result(
+                    AssetCheckResult(
+                        asset_key=AssetKey("my_asset"),
+                        check_name="my_check",
+                        success=True,
+                        severity=AssetCheckSeverity.WARNING,
+                        metadata={"foo": "bar"}
+                    )
+                )
+                ...
+        """
+        check.inst_param(asset_check_result, "asset_check_result", AssetCheckResult)
+        self._step_execution_context.add_result_object(asset_check_result)
+
+    def has_asset_check_result_for_output(self, output_name: str) -> bool:
+        handle = self.job_def.asset_layer.get_asset_check_for_output_name(output_name)
+        if handle is None:
+            return False
+        result_objects = self.get_step_execution_context().result_objects
+        for obj in result_objects:
+            if (
+                isinstance(obj, AssetCheckResult)
+                and obj.asset_key == handle.asset_key
+                and obj.check_name == handle.name
+            ):
+                return True
+        return False
 
     def get_step_execution_context(self) -> StepExecutionContext:
         """Allows advanced users (e.g. framework authors) to punch through to the underlying

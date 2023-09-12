@@ -133,12 +133,25 @@ def _coerce_op_compute_fn_to_iterator(
 def _zip_and_iterate_op_result(
     result: Any, context: OpExecutionContext, output_defs: Sequence[OutputDefinition]
 ) -> Iterator[Tuple[int, Any, OutputDefinition]]:
-    if len(output_defs) > 1:
-        result = _validate_multi_return(context, result, output_defs)
-        for position, (output_def, element) in enumerate(zip(output_defs, result)):
+    expected_return_outputs = _filter_expected_output_defs(context, output_defs)
+    if len(expected_return_outputs) > 1:
+        result = _validate_multi_return(context, result, expected_return_outputs)
+        for position, (output_def, element) in enumerate(zip(expected_return_outputs, result)):
             yield position, output_def, element
     else:
-        yield 0, output_defs[0], result
+        yield 0, expected_return_outputs[0], result
+
+
+# Filter out output_defs corresponding to asset check results that have already been registered on the
+# context-- we don't expect these to be returned.
+def _filter_expected_output_defs(
+    context: OpExecutionContext, output_defs: Sequence[OutputDefinition]
+) -> Sequence[OutputDefinition]:
+    return [
+        output_def
+        for output_def in output_defs
+        if not context.has_asset_check_result_for_output(output_def.name)
+    ]
 
 
 def _validate_multi_return(

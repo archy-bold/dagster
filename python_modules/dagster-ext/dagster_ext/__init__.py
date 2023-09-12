@@ -16,6 +16,7 @@ from typing import (
     TYPE_CHECKING,
     Any,
     ClassVar,
+    Dict,
     Generic,
     Iterator,
     Literal,
@@ -26,6 +27,7 @@ from typing import (
     Type,
     TypedDict,
     TypeVar,
+    Union,
     cast,
     get_args,
 )
@@ -96,6 +98,16 @@ class ExtDataProvenance(TypedDict):
     code_version: str
     input_data_versions: Mapping[str, str]
     is_user_provided: bool
+
+
+ExtAssetCheckSeverity = Literal["WARN", "ERROR"]
+
+ExtMetadataRawValue = Union[int, float, str, Mapping[str, Any], Sequence[Any], bool, None]
+
+
+class ExtMetadataValue(TypedDict):
+    metadata_type: Optional["ExtMetadataType"]
+    value: ExtMetadataRawValue
 
 
 ExtMetadataType = Literal[
@@ -246,6 +258,30 @@ def _assert_opt_param_value(
             f" `{expected_values}`, got `{value}`."
         )
     return value
+
+
+def _normalize_param_metadata(
+    metadata: Mapping[str, Union[ExtMetadataRawValue, ExtMetadataValue]], method: str, param: str
+) -> Mapping[str, Union[ExtMetadataRawValue, ExtMetadataValue]]:
+    _assert_param_type(metadata, dict, method, param)
+    new_metadata: Dict[str, ExtMetadataValue] = {}
+    for key, value in metadata.items():
+        if not isinstance(key, str):
+            raise DagsterExtError(
+                f"Invalid type for parameter `{param}` of `{method}`. Expected a dict with string"
+                f" keys, got a key `{key}` of type `{type(key)}`."
+            )
+        elif isinstance(value, dict):
+            if not {*value.keys()} == {*ExtMetadataValue.__annotations__.keys()}:
+                raise DagsterExtError(
+                    f"Invalid type for parameter `{param}` of `{method}`. Expected a dict with"
+                    " string keys and values that are either raw metadata values or dictionaries"
+                    f" with schema `{{value: ..., metadata_type: ...}}`. Got a value `{value}`."
+                )
+            new_metadata[key] = cast(ExtMetadataValue, value)
+        else:
+            new_metadata[key] = {"value": value, "metadata_type": None}
+    return new_metadata
 
 
 def _assert_param_json_serializable(value: _T, method: str, param: str) -> _T:
@@ -701,7 +737,7 @@ class ExtContext:
     def report_asset_metadata(
         self,
         label: str,
-        value: Any,
+        value: ExtMetadataRawValue,
         metadata_type: Optional[ExtMetadataType] = None,
         asset_key: Optional[str] = None,
     ) -> None:
@@ -727,6 +763,35 @@ class ExtContext:
         )
         self._write_message(
             "report_asset_data_version", {"asset_key": asset_key, "data_version": data_version}
+        )
+
+    def report_asset_check_result(
+        self,
+        check_name: str,
+        success: bool,
+        severity: ExtAssetCheckSeverity = "ERROR",
+        metadata: Optional[Mapping[str, Union[ExtMetadataRawValue, ExtMetadataValue]]] = None,
+        asset_key: Optional[str] = None,
+    ) -> None:
+        asset_key = _resolve_optionally_passed_asset_key(
+            self._data, asset_key, "report_asset_check_result"
+        )
+        check_name = _assert_param_type(check_name, str, "report_asset_check_result", "check_name")
+        success = _assert_param_type(success, bool, "report_asset_check_result", "success")
+        metadata = (
+            _normalize_param_metadata(metadata, "report_asset_check_result", "metadata")
+            if metadata
+            else None
+        )
+        self._write_message(
+            "report_asset_check",
+            {
+                "asset_key": asset_key,
+                "check_name": check_name,
+                "success": success,
+                "metadata": metadata,
+                "severity": severity,
+            },
         )
 
     def log(self, message: str, level: str = "info") -> None:

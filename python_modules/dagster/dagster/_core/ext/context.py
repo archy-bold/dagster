@@ -9,12 +9,15 @@ from dagster_ext import (
     ExtExtras,
     ExtMessage,
     ExtMetadataType,
+    ExtMetadataValue,
     ExtParams,
     ExtTimeWindow,
     encode_env_var,
 )
 
 import dagster._check as check
+from dagster._core.definitions.asset_check_result import AssetCheckResult
+from dagster._core.definitions.asset_check_spec import AssetCheckSeverity
 from dagster._core.definitions.data_version import DataProvenance, DataVersion
 from dagster._core.definitions.events import AssetKey
 from dagster._core.definitions.metadata import MetadataValue, normalize_metadata_value
@@ -34,6 +37,8 @@ class ExtMessageHandler:
             self._handle_report_asset_metadata(**message["params"])  # type: ignore
         elif message["method"] == "report_asset_data_version":
             self._handle_report_asset_data_version(**message["params"])  # type: ignore
+        elif message["method"] == "report_asset_check":
+            self._handle_report_asset_check(**message["params"])  # type: ignore
         elif message["method"] == "log":
             self._handle_log(**message["params"])  # type: ignore
 
@@ -87,6 +92,35 @@ class ExtMessageHandler:
         check.str_param(data_version, "data_version")
         key = AssetKey.from_user_string(asset_key)
         self._context.set_data_version(key, DataVersion(data_version))
+
+    def _handle_report_asset_check(
+        self,
+        asset_key: str,
+        check_name: str,
+        success: bool,
+        severity: str,
+        metadata: Mapping[str, ExtMetadataValue],
+    ) -> None:
+        check.str_param(asset_key, "asset_key")
+        check.str_param(check_name, "check_name")
+        check.bool_param(success, "success")
+        check.literal_param(severity, "severity", [x.value for x in AssetCheckSeverity])
+        metadata = check.opt_mapping_param(metadata, "metadata", key_type=str)
+        resolved_asset_key = AssetKey.from_user_string(asset_key)
+        resolved_metadata = {
+            k: self._resolve_metadata_value(v["value"], v["metadata_type"])
+            for k, v in metadata.items()
+        }
+        resolved_severity = AssetCheckSeverity(severity)
+        self._context.add_asset_check_result(
+            AssetCheckResult(
+                asset_key=resolved_asset_key,
+                check_name=check_name,
+                success=success,
+                severity=resolved_severity,
+                metadata=resolved_metadata,
+            )
+        )
 
     def _handle_log(self, message: str, level: str = "info") -> None:
         check.str_param(message, "message")

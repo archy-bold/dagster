@@ -79,6 +79,7 @@ if TYPE_CHECKING:
     from dagster._core.definitions.dependency import NodeHandle
     from dagster._core.definitions.resource_definition import Resources
     from dagster._core.event_api import EventLogRecord
+    from dagster._core.execution.plan.compute import OpOutputUnion
     from dagster._core.execution.plan.plan import ExecutionPlan
     from dagster._core.execution.plan.state import KnownExecutionState
     from dagster._core.instance import DagsterInstance
@@ -553,6 +554,7 @@ class StepExecutionContext(PlanExecutionContext, IStepContext):
             self._step_output_capture = {}
 
         self._output_metadata: Dict[str, Any] = {}
+        self._result_objects: List["OpOutputUnion"] = []
         self._seen_outputs: Dict[str, Union[str, Set[str]]] = {}
 
         self._input_asset_version_info: Dict[AssetKey, Optional["InputAssetVersionInfo"]] = {}
@@ -789,6 +791,13 @@ class StepExecutionContext(PlanExecutionContext, IStepContext):
         if mapping_key and metadata:
             return metadata.get(mapping_key)
         return metadata
+
+    def add_result_object(self, obj: "OpOutputUnion") -> None:
+        self._result_objects.append(obj)
+
+    @property
+    def result_objects(self) -> Sequence["OpOutputUnion"]:
+        return self._result_objects
 
     def _get_source_run_id_from_logs(self, step_output_handle: StepOutputHandle) -> Optional[str]:
         # walk through event logs to find the right run_id based on the run lineage

@@ -1,4 +1,5 @@
 import inspect
+from itertools import chain
 from typing import (
     AbstractSet,
     Any,
@@ -90,7 +91,7 @@ def _process_asset_results_to_events(
      - An AssetCheckEvaluation, which combines the check result with information from the context
          to create a full picture of the asset check's evaluation.
     """
-    for user_event in user_event_sequence:
+    for user_event in chain(user_event_sequence, step_context.result_objects):
         if isinstance(user_event, MaterializeResult):
             assets_def = step_context.job_def.asset_layer.assets_def_for_node(
                 step_context.node_handle

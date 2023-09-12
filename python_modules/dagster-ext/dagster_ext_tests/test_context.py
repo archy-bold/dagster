@@ -82,9 +82,20 @@ def test_single_asset_context():
     context.report_asset_metadata("bar", "boo")
     context.report_asset_metadata("baz", 2, "int")
     context.report_asset_data_version("bar")
+    context.report_asset_check_result(
+        "foo_check",
+        True,
+        metadata={
+            "meta_1": 1,
+            "meta_2": {"value": "foo", "metadata_type": "text"},
+        },
+    )
 
     _assert_unknown_asset_key(context, "report_asset_metadata", "bar", "baz", asset_key="fake")
     _assert_unknown_asset_key(context, "report_asset_data_version", "bar", asset_key="fake")
+    _assert_unknown_asset_key(
+        context, "report_asset_check_result", "foo_check", True, asset_key="fake"
+    )
 
 
 def test_multi_asset_context():
@@ -114,6 +125,10 @@ def test_multi_asset_context():
     _assert_unknown_asset_key(context, "report_asset_metadata", "bar", "baz", asset_key="fake")
     _assert_undefined_asset_key(context, "report_asset_data_version", "bar")
     _assert_unknown_asset_key(context, "report_asset_data_version", "bar", asset_key="fake")
+    _assert_undefined_asset_key(context, "report_asset_check_result", "foo_check", True)
+    _assert_unknown_asset_key(
+        context, "report_asset_check_result", "foo_check", True, asset_key="fake"
+    )
 
 
 def test_no_partition_context():
