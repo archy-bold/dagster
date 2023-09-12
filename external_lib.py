@@ -1,9 +1,6 @@
 from typing import Optional
 
 from dagster import AssetMaterialization, DagsterInstance
-from dagster._core.definitions.asset_spec import AssetSpec
-from dagster._core.definitions.assets import AssetsDefinition
-from dagster._core.definitions.decorators.asset_decorator import asset
 from dagster._core.definitions.events import AssetObservation
 from dagster._core.events import (
     AssetObservationData,
@@ -11,23 +8,6 @@ from dagster._core.events import (
     DagsterEventType,
     StepMaterializationData,
 )
-
-
-# This creates an AssetsDefinition that contains an asset that is never
-# meant to be materialized by Dagster, only observed. Presumably we would disable
-# button in the UI (it would act more like a source asset). However
-# this allows Dagster to act as a data observability tool and lineage
-# tool for assets defined elsewhere
-def create_observable_asset(asset_spec: AssetSpec) -> AssetsDefinition:
-    @asset(key=asset_spec.asset_key, deps=[dep.asset_key for dep in asset_spec.deps])
-    def _observable_asset(_) -> None:
-        raise Exception("Illegal to materialize an observable asset")
-
-    # this is not working
-    # @multi_asset(specs=[asset_spec])
-    # def _dummy_asset(_):
-    #     raise Exception("illegal to materialize this asset")
-    return _observable_asset
 
 
 # This is used by external computations to report materializations

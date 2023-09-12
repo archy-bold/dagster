@@ -59,11 +59,11 @@ from .partition_mapping import (
     infer_partition_mapping,
 )
 from .resource_definition import ResourceDefinition
-from .source_asset import SourceAsset
 from .utils import DEFAULT_GROUP_NAME, validate_group_name
 
 if TYPE_CHECKING:
     from .graph_definition import GraphDefinition
+    from .source_asset import SourceAsset
 
 
 class AssetsDefinition(ResourceAddable, RequiresResources, IHasInternalInit):
@@ -1128,7 +1128,7 @@ class AssetsDefinition(ResourceAddable, RequiresResources, IHasInternalInit):
             return self.__class__(**merge_dicts(self.get_attributes_dict(), replaced_attributes))
 
     @public
-    def to_source_assets(self) -> Sequence[SourceAsset]:
+    def to_source_assets(self) -> Sequence["SourceAsset"]:
         """Returns a SourceAsset for each asset in this definition.
 
         Each produced SourceAsset will have the same key, metadata, io_manager_key, etc. as the
@@ -1140,7 +1140,7 @@ class AssetsDefinition(ResourceAddable, RequiresResources, IHasInternalInit):
         ]
 
     @public
-    def to_source_asset(self, key: Optional[CoercibleToAssetKey] = None) -> SourceAsset:
+    def to_source_asset(self, key: Optional[CoercibleToAssetKey] = None) -> "SourceAsset":
         """Returns a representation of this asset as a :py:class:`SourceAsset`.
 
         If this is a multi-asset, the "key" argument allows selecting which asset to return a
@@ -1176,7 +1176,9 @@ class AssetsDefinition(ResourceAddable, RequiresResources, IHasInternalInit):
         check.invariant(len(output_names) == 1)
         return self._output_to_source_asset(output_names[0])
 
-    def _output_to_source_asset(self, output_name: str) -> SourceAsset:
+    def _output_to_source_asset(self, output_name: str) -> "SourceAsset":
+        from .source_asset import SourceAsset
+
         with disable_dagster_warnings():
             output_def = self.node_def.resolve_output_to_origin(
                 output_name, NodeHandle(self.node_def.name, parent=None)
