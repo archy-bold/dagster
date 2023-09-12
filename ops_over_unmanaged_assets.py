@@ -10,7 +10,7 @@ from dagster._core.execution.context.compute import OpExecutionContext
 def op_produces_asset_one(context: OpExecutionContext):
     context.log_event(
         AssetMaterialization(
-            asset_key="unmanaged_asset_one", metadata={"foo_metadata_label": "metadata_value_1"}
+            asset_key="observable_asset_one", metadata={"foo_metadata_label": "metadata_value_1"}
         )
     )
 

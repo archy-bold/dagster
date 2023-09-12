@@ -9,11 +9,6 @@ from external_lib import (
     report_asset_observation,
 )
 
-# This code location defines metadata exclusively. It expects execution to happen elsewhere.
-unmanaged_asset_one_spec = AssetSpec(asset_key="unmanaged_asset_one")
-unmanaged_asset_two_spec = AssetSpec(
-    asset_key="unmanaged_asset_two", deps=[unmanaged_asset_one_spec]
-)
 
 
 @sensor()
@@ -21,7 +16,7 @@ def sensor_that_emits_materializations(context: SensorEvaluationContext):
     report_asset_materialization(
         instance=context.instance,
         asset_materialization=AssetMaterialization(
-            asset_key="unmanaged_asset_one", metadata={"source": "from_sensor"}
+            asset_key="observable_asset_one", metadata={"source": "from_sensor"}
         ),
     )
 
@@ -31,15 +26,22 @@ def sensor_that_observes(context: SensorEvaluationContext):
     report_asset_observation(
         instance=context.instance,
         asset_observation=AssetObservation(
-            asset_key="unmanaged_asset_one", metadata={"source": "from_sensor"}
+            asset_key="observable_asset_one", metadata={"source": "from_sensor"}
         ),
     )
 
 
+# This code location defines metadata exclusively. It expects execution to happen elsewhere.
+observable_asset_one_spec = AssetSpec(asset_key="observable_asset_one")
+observable_asset_two_spec = AssetSpec(
+    asset_key="observable_asset_two", deps=[observable_asset_one_spec]
+)
 defs = Definitions(
     assets=[
-        create_observable_asset(unmanaged_asset_one_spec),
-        create_observable_asset(unmanaged_asset_two_spec),
+        create_observable_asset(observable_asset_one_spec),
+        create_observable_asset(observable_asset_two_spec),
     ],
-    sensors=[sensor_that_emits_materializations, sensor_that_observes],
 )
+
+
+    # sensors=[sensor_that_emits_materializations, sensor_that_observes],
