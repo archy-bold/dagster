@@ -652,14 +652,14 @@ class TestAssetChecks(ExecutingGraphQLContextTestMatrix):
                 }
             },
         )
-        print(result.data)  # ruff: noqa: T201
+        print(result.data)  # noqa: T201
         assert result.data["launchPipelineExecution"]["__typename"] == "LaunchRunSuccess"
 
         run_id = result.data["launchPipelineExecution"]["run"]["runId"]
         run = poll_for_finished_run(graphql_context.instance, run_id)
 
         logs = graphql_context.instance.all_logs(run_id)
-        print(logs)  # ruff: noqa: T201
+        print(logs)  # noqa: T201
         assert run.is_success
 
         checks = [
@@ -695,14 +695,14 @@ class TestAssetChecks(ExecutingGraphQLContextTestMatrix):
                 }
             },
         )
-        print(result.data)  # ruff: noqa: T201
+        print(result.data)  # noqa: T201
         assert result.data["launchPipelineExecution"]["__typename"] == "LaunchRunSuccess"
 
         run_id = result.data["launchPipelineExecution"]["run"]["runId"]
         run = poll_for_finished_run(graphql_context.instance, run_id)
 
         logs = graphql_context.instance.all_logs(run_id)
-        print(logs)  # ruff: noqa: T201
+        print(logs)  # noqa: T201
         assert run.is_success
 
         check_evaluations = [
@@ -734,14 +734,14 @@ class TestAssetChecks(ExecutingGraphQLContextTestMatrix):
                 }
             },
         )
-        print(result.data)  # ruff: noqa: T201
+        print(result.data)  # noqa: T201
         assert result.data["launchPipelineExecution"]["__typename"] == "LaunchRunSuccess"
 
         run_id = result.data["launchPipelineExecution"]["run"]["runId"]
         run = poll_for_finished_run(graphql_context.instance, run_id)
 
         logs = graphql_context.instance.all_logs(run_id)
-        print(logs)  # ruff: noqa: T201
+        print(logs)  # noqa: T201
         assert run.is_success
 
         check_evaluations = [
