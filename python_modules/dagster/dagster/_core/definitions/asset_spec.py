@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 
 
 @experimental
-class ObservableAssetSpec:
+class ObservableAsset:
     """Specifies the core attributes of an observable asset.
 
     Attributes:
@@ -48,7 +48,7 @@ class ObservableAssetSpec:
             Iterable[
                 Union[
                     CoercibleToAssetKey,
-                    "ObservableAssetSpec",
+                    "ObservableAsset",
                     AssetsDefinition,
                     "SourceAsset",
                     "AssetDep",
@@ -87,7 +87,7 @@ class ObservableAssetSpec:
 
 
 @experimental
-class AssetSpec(ObservableAssetSpec):
+class AssetSpec(ObservableAsset):
     """Specifies the core attributes of an asset. This object is attached to the decorated
     function that defines how it materialized.
 
