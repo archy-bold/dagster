@@ -27,8 +27,7 @@ manifest_asset_checks_json = json.loads(asset_checks_manifest_path.read_bytes())
 
 def test_with_asset_checks() -> None:
     @dbt_assets(manifest=manifest_no_asset_checks_json)
-    def my_dbt_assets_no_checks():
-        ...
+    def my_dbt_assets_no_checks(): ...
 
     # dbt tests are present, but are not modeled as Dagster asset checks
     assert any(
@@ -37,8 +36,7 @@ def test_with_asset_checks() -> None:
     assert not my_dbt_assets_no_checks.check_specs_by_output_name
 
     @dbt_assets(manifest=manifest_asset_checks_json)
-    def my_dbt_assets_with_checks():
-        ...
+    def my_dbt_assets_with_checks(): ...
 
     # dbt tests are present, and are modeled as Dagster asset checks
     assert any(

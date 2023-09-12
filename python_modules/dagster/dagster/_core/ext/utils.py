@@ -154,12 +154,10 @@ class ExtBlobStoreMessageReader(ExtMessageReader):
         yield
 
     @abstractmethod
-    def get_params(self) -> ExtParams:
-        ...
+    def get_params(self) -> ExtParams: ...
 
     @abstractmethod
-    def download_messages_chunk(self, index: int) -> Optional[str]:
-        ...
+    def download_messages_chunk(self, index: int) -> Optional[str]: ...
 
     def _reader_thread(self, handler: "ExtMessageHandler", is_task_complete: Event) -> None:
         start_or_last_download = datetime.datetime.now()
