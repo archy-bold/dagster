@@ -181,10 +181,8 @@ class SourceAsset(ResourceAddable):
         return self.node_def is not None
 
     def _get_op_def_compute_fn(self, observe_fn: SourceAssetObserveFunction):
-        from dagster._core.definitions.decorators.op_decorator import (
-            DecoratedOpFunction,
-            is_context_provided,
-        )
+        from dagster._core.decorator_utils import is_context_provided
+        from dagster._core.definitions.decorators.op_decorator import DecoratedOpFunction
         from dagster._core.execution.context.compute import (
             OpExecutionContext,
         )
