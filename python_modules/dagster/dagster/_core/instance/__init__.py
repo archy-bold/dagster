@@ -2182,7 +2182,7 @@ class DagsterInstance(DynamicPartitionsStore):
     def report_dagster_event(
         self,
         dagster_event: "DagsterEvent",
-        run_id: str,
+        run_id: Optional[str],
         log_level: Union[str, int] = logging.INFO,
     ) -> None:
         """Takes a DagsterEvent and stores it in persistent storage for the corresponding DagsterRun."""
