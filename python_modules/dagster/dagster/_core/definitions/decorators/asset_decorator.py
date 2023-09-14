@@ -326,7 +326,6 @@ class _Asset:
         from dagster._core.execution.build_resources import wrap_resources_for_execution
 
         validate_resource_annotated_function(fn)
-        _validate_context_type_hint(fn)
         asset_name = self.name or fn.__name__
 
         asset_ins = build_asset_ins(fn, self.ins or {}, self.deps)
@@ -1277,18 +1276,3 @@ def _validate_and_assign_output_names_to_check_specs(
             )
 
     return check_specs_by_output_name
-
-
-def _validate_context_type_hint(fn):
-    from inspect import _empty as EmptyAnnotation
-
-    from dagster._core.decorator_utils import get_function_params, is_context_provided
-    from dagster._core.execution.context.compute import AssetExecutionContext, OpExecutionContext
-
-    params = get_function_params(fn)
-    if is_context_provided(params):
-        if not isinstance(params[0], (AssetExecutionContext, OpExecutionContext, EmptyAnnotation)):
-            raise DagsterInvalidDefinitionError(
-                f"Cannot annotate `context` parameter with type {params[0].annotation}. `context`"
-                " must be annotated with AssetExecutionContext, OpExecutionContext, or left blank."
-            )
