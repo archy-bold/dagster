@@ -759,7 +759,7 @@ def test_multi_partition_mapping_with_asset_deps():
     )
 
     asset_3 = AssetSpec(
-        asset_key="asset_3",
+        key="asset_3",
         deps=[
             AssetDep(
                 asset=asset_1,
@@ -772,7 +772,7 @@ def test_multi_partition_mapping_with_asset_deps():
         ],
     )
     asset_4 = AssetSpec(
-        asset_key="asset_4",
+        key="asset_4",
         deps=[
             AssetDep(
                 asset=asset_1,
