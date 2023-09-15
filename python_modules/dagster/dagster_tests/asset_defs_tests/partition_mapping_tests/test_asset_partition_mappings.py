@@ -575,8 +575,8 @@ def test_identity_partition_mapping():
 
 
 def test_partition_mapping_with_asset_deps():
-    asset_1 = AssetSpec(asset_key="asset_1")
-    asset_2 = AssetSpec(asset_key="asset_2")
+    asset_1 = AssetSpec(key="asset_1")
+    asset_2 = AssetSpec(key="asset_2")
 
     asset_1_partition_mapping = TimeWindowPartitionMapping(start_offset=-1, end_offset=-1)
     asset_2_partition_mapping = TimeWindowPartitionMapping(start_offset=-2, end_offset=-2)
@@ -640,8 +640,8 @@ def test_partition_mapping_with_asset_deps():
 
 
 def test_conflicting_mappings_with_asset_deps():
-    asset_1 = AssetSpec(asset_key="asset_1")
-    asset_2 = AssetSpec(asset_key="asset_2")
+    asset_1 = AssetSpec(key="asset_1")
+    asset_2 = AssetSpec(key="asset_2")
 
     asset_1_partition_mapping = TimeWindowPartitionMapping(start_offset=-1, end_offset=-1)
     asset_2_partition_mapping = TimeWindowPartitionMapping(start_offset=-2, end_offset=-2)
